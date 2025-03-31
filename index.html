@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Y2K Dreamscape ✨</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+    <style>
+        /* ===== AGE GATE STYLES ===== */
+        .age-gate {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #ff66b2, #ff99cc, #ffccff);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .age-gate h1 {
+            font-size: 2.5em;
+            text-shadow: 2px 2px 0px #ff0066;
+            margin-bottom: 20px;
+        }
+        
+        .age-gate p {
+            font-size: 1.2em;
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+        
+        .age-buttons {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .age-btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .confirm-btn {
+            background-color: #ff0066;
+            color: white;
+        }
+        
+        .deny-btn {
+            background-color: transparent;
+            color: #ff0066;
+            border: 2px solid #ff0066;
+        }
+        
+        /* ===== MAIN SITE STYLES ===== */
+        body {
+            font-family: 'Comic Sans MS', 'Marker Felt', 'Arial Rounded MT Bold', sans-serif;
+            background-color: #fff0f5;
+            background-image: url('https://i.imgur.com/8KQZz9T.png');
+            background-repeat: repeat;
+            margin: 0;
+            padding: 0;
+            color: #ff66b2;
+            display: none; /* Hidden until age verification */
+        }
+        
+        /* Glitter cursor */
+        * {
+            cursor: url('https://i.imgur.com/ZYQfziE.png'), auto;
+        }
+        
+        /* Header with Y2K vibes */
+        header {
+            background: linear-gradient(to right, #ff66b2, #ff99cc, #ffccff);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 3px dotted #ff3399;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            text-shadow: 2px 2px 0px #ffffff, 4px 4px 0px #ffccff;
+            margin: 0;
+            color: #ff0066;
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #ffccff;
+            padding: 10px;
+            border-bottom: 2px dashed #ff99cc;
+        }
+        
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #ff0066;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background-color: #ffffff;
+            border: 1px solid #ff99cc;
+        }
+        
+        nav a:hover {
+            background-color: #ff66b2;
+            color: white;
+            text-decoration: underline;
+        }
+        
+        /* Main content area - Pinterest/TikTok style grid */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .pin {
+            background-color: white;
+            border: 3px solid #ff99cc;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: 5px 5px 0px #ffccff;
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pin:hover {
+            transform: rotate(2deg) scale(1.05);
+        }
+        
+        .pin img {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px dashed #ff66b2;
+        }
+        
+        .pin h3 {
+            color: #ff3399;
+            margin: 10px 0 5px 0;
+            font-size: 1.2em;
+        }
+        
+        .pin p {
+            color: #ff66b2;
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+        
+        .pin .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .pin .actions button {
+            background-color: #ffccff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 10px;
+            color: #ff0066;
+            cursor: pointer;
+        }
+        
+        /* Report button */
+        .report-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        /* TikTok style video player */
+        .video-pin {
+            position: relative;
+        }
+        
+        .video-pin video {
+            width: 100%;
+            border-radius: 10px;
+        }
+        
+        .video-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            border-radius: 10px;
+        }
+        
+        /* Footer */
+        footer {
+            background: linear-gradient(to right, #ffccff, #ff99cc, #ff66b2);
+            text-align: center;
+            padding: 15px;
+            border-top: 3px dotted #ff3399;
+            color: white;
+            font-size: 0.9em;
+        }
+        
+        /* Blinkies (classic 2000s web element) */
+        .blinkies {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .blinkies img {
+            margin: 0 5px;
+            height: 20px;
+        }
+        
+        /* Privacy/security links */
+        .security-links {
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .security-links a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+        
+        /* Login modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #ffccff;
+            padding: 20px;
+            border-radius: 15px;
+            width: 300px;
+            text-align: center;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #ffccff;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #ff66b2;
+            border-radius: 6px;
+            border: 2px dotted #ff99cc;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== AGE VERIFICATION GATE ===== -->
+    <div class="age-gate" id="ageGate">
+        <h1>✧･ﾟ: *✧･ﾟ:* Welcome! *:･ﾟ✧*:･ﾟ✧</h1>
+        <p>This website contains user-generated content. To continue, please confirm you are 13 years or older in compliance with COPPA regulations.</p>
+        <div class="age-buttons">
+            <button class="age-btn confirm-btn" id="confirmAge">I'm 13 or older</button>
+            <button class="age-btn deny-btn" id="denyAge">I'm under 13</button>
+        </div>
+        <p style="margin-top: 30px; font-size: 0.9em;">
+            By entering, you agree to our <a href="#privacy" style="color: #ff0066;">Privacy Policy</a> and <a href="#terms" style="color: #ff0066;">Terms of Service</a>.
+        </p>
+    </div>
+
+    <!-- ===== MAIN WEBSITE CONTENT (HIDDEN INITIALLY) ===== -->
+    <div id="mainContent" style="display: none;">
+        <header>
+            <h1>✧･ﾟ: *✧･ﾟ:* Y2K Dreamscape *:･ﾟ✧*:･ﾟ✧</h1>
+        </header>
+        
+        <nav>
+            <a href="#" id="homeLink">Home</a>
+            <a href="#" id="exploreLink">Explore</a>
+            <a href="#" id="createLink">Create</a>
+            <a href="#" id="profileLink">Profile</a>
+            <a href="#" id="loginLink">Login</a>
+        </nav>
+        
+        <div class="blinkies">
+            <img src="https://i.imgur.com/JR5iW8S.gif" alt="sparkles">
+            <img src="https://i.imgur.com/9eYFbW8.gif" alt="under construction">
+            <img src="https://i.imgur.com/mVrQZbH.gif" alt="best viewed with internet explorer">
+            <img src="https://i.imgur.com/JR5iW8S.gif" alt="sparkles">
+        </div>
+        
+        <div class="container" id="contentContainer">
+            <!-- Content will be loaded here dynamically -->
+        </div>
+        
+        <footer>
+            <div class="security-links">
+                <a href="#privacy" id="privacyLink">Privacy Policy</a>
+                <a href="#terms" id="termsLink">Terms of Service</a>
+                <a href="#safety" id="safetyLink">Safety Guidelines</a>
+                <a href="#report" id="reportLink">Report Abuse</a>
+            </div>
+            <p>© 2004 Y2K Dreamscape - For users 13+ only</p>
+            <p>🦋 Visitor Count: <span id="visitorCounter">Loading...</span> 🦋</p>
+        </footer>
+        
+        <!-- Marquee for extra 2000s feel -->
+        <marquee behavior="scroll" direction="left" scrollamount="5" style="background-color: #ffccff; color: #ff0066; padding: 5px;">
+            ✧･ﾟ: *✧･ﾟ:* Welcome to my Y2K aesthetic website! *:･ﾟ✧*:･ﾟ✧
+        </marquee>
+    </div>
+
+    <!-- ===== LOGIN MODAL ===== -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h3 style="color: #ff0066;">Login/Sign Up</h3>
+            <input type="email" id="loginEmail" placeholder="Email" style="width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #ff99cc; border-radius: 5px;">
+            <input type="password" id="loginPassword" placeholder="Password" style="width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #ff99cc; border-radius: 5px;">
+            <button id="loginBtn" style="background-color: #ff0066; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">Login</button>
+            <button id="signupBtn" style="background-color: #ff99cc; color: #ff0066; border: none; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">Sign Up</button>
+            <button id="googleLogin" style="background-color: white; color: #ff0066; border: 1px solid #ff99cc; padding: 8px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">Login with Google</button>
+            <button id="closeModal" style="background-color: transparent; color: #ff0066; border: none; margin-top: 10px; cursor: pointer;">Close</button>
+            <p style="font-size: 0.8em; margin-top: 10px;">By logging in, you confirm you are 13+ and agree to our <a href="#terms" style="color: #ff0066;">Terms</a>.</p>
+        </div>
+    </div>
+
+    <!-- ===== PRIVACY MODAL ===== -->
+    <div class="modal" id="privacyModal">
+        <div class="modal-content">
+            <h3 style="color: #ff0066;">Privacy Policy</h3>
+            <div style="max-height: 300px; overflow-y: scroll; text-align: left; padding: 10px; background-color: white; border-radius: 5px; margin: 10px 0;">
+                <h4>Information We Collect</h4>
+                <p>We collect basic account information like email addresses for users 13 and older. For safety, we may monitor content for inappropriate material.</p>
+                
+                <h4>How We Use Information</h4>
+                <p>Your information is used to:</p>
+                <ul>
+                    <li>Provide and improve our services</li>
+                    <li>Moderate content for safety</li>
+                    <li>Prevent underage usage (COPPA compliant)</li>
+                </ul>
+                
+                <h4>Safety Measures</h4>
+                <p>We employ:</p>
+                <ul>
+                    <li>Age verification</li>
+                    <li>Content reporting system</li>
+                    <li>Automated and manual content moderation</li>
+                </ul>
+            </div>
+            <button id="closePrivacyModal" style="background-color: #ff0066; color: white; border: none; padding: 8px 15px; border-radius: 5px; margin-top: 10px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== FIREBASE CONFIGURATION =====
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        
+        // ===== AGE VERIFICATION =====
+        document.getElementById('confirmAge').addEventListener('click', function() {
+            // Set cookie to remember age verification (expires in 30 days)
+            document.cookie = "ageVerified=true; max-age=" + 60*60*24*30 + "; path=/";
+            
+            // Hide age gate and show main content
+            document.getElementById('ageGate').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            
+            // Load content
+            loadInitialContent();
+        });
+        
+        document.getElementById('denyAge').addEventListener('click', function() {
+            alert("Sorry, you must be 13 or older to use this site. Redirecting...");
+            window.location.href = "https://www.kidsafeseal.com/";
+        });
+        
+        // Check if age was already verified
+        if (document.cookie.includes("ageVerified=true")) {
+            document.getElementById('ageGate').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            loadInitialContent();
+        }
+        
+        // ===== CONTENT MODERATION FUNCTIONS =====
+        function moderateContent(text) {
+            // Basic profanity filter
+            const bannedWords = ["badword1", "badword2", "badword3"]; // Add actual words
+            let moderatedText = text;
+            
+            bannedWords.forEach(word => {
+                const regex = new RegExp(word, "gi");
+                moderatedText = moderatedText.replace(regex, "★".repeat(word.length));
+            });
+            
+            return moderatedText;
+        }
+        
+        async function reportContent(contentId, reason) {
+            try {
+                await db.collection('reportedContent').add({
+                    contentId: contentId,
+                    reason: reason,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    reviewed: false
+                });
+                alert("Thank you for reporting. Our moderators will review this content.");
+            } catch (error) {
+                console.error("Error reporting content: ", error);
+                alert("Error reporting content. Please try again.");
+            }
+        }
+        
+        // ===== AUTHENTICATION =====
+        document.getElementById('loginLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('loginModal').style.display = 'flex';
+        });
+        
+        document.getElementById('closeModal').addEventListener('click', function() {
+            document.getElementById('loginModal').style.display = 'none';
+        });
+        
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert("Logged in successfully!");
+                    document.getElementById('loginModal').style.display = 'none';
+                    updateAuthUI();
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
+                });
+        });
+        
+        // ===== CONTENT LOADING =====
+        function loadInitialContent() {
+            // Sample content - in a real app, you'd load from Firestore
+            const sampleContent = [
+                {
+                    id: "1",
+                    type: "image",
+                    title: "Pink Paradise ✨",
+                    content: "https://i.imgur.com/XxYQz9T.jpg",
+                    author: "glittergirl22",
+                    likes: 42,
+                    timestamp: new Date()
+                },
+                {
+                    id: "2",
+                    type: "video",
+                    title: "My Y2K Room Tour! 🎀",
+                    content: "https://example.com/video1.mp4",
+                    author: "xXbarbieprincessXx",
+                    likes: 128,
+                    timestamp: new Date(Date.now() - 3600000)
+                },
+                {
+                    id: "3",
+                    type: "image",
+                    title: "2000s Moodboard 💖",
+                    content: "https://i.imgur.com/ZzYQz9T.jpg",
+                    author: "vintagevibes",
+                    likes: 87,
+                    timestamp: new Date(Date.now() - 7200000)
+                }
+            ];
+            
+            const container = document.getElementById('contentContainer');
+            container.innerHTML = '';
+            
+            sampleContent.forEach(item => {
+                const pin = document.createElement('div');
+                pin.className = 'pin';
+                if (item.type === 'video') pin.classList.add('video-pin');
+                
+                let contentElement;
+                if (item.type === 'image') {
+                    contentElement = `<img src="${item.content}" alt="${moderateContent(item.title)}">`;
+                } else {
+                    contentElement = `
+                        <video controls poster="https://i.imgur.com/YyZQz9T.jpg">
+                            <source src="${item.content}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-controls">
+                            <button>♥ ${item.likes}</button>
+                            <button>✿ Save</button>
+                            <button>▶ Play</button>
+                        </div>
+                    `;
+                }
+                
+                pin.innerHTML = `
+                    <button class="report-btn" onclick="reportContent('${item.id}', 'inappropriate')">!</button>
+                    ${contentElement}
+                    <h3>${moderateContent(item.title)}</h3>
+                    <p>Uploaded by: ${item.author}</p>
+                    <div class="actions">
+                        <button onclick="likeContent('${item.id}')">♥ Like</button>
+                        <button>✿ Save</button>
+                        <button>✉ Share</button>
+                    </div>
+                `;
+                
+                container.appendChild(pin);
+            });
+        }
+        
+        // ===== SECURITY LINKS =====
+        document.getElementById('privacyLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('privacyModal').style.display = 'flex';
+        });
+        
+        document.getElementById('closePrivacyModal').addEventListener('click', function() {
+            document.getElementById('privacyModal').style.display = 'none';
+        });
+        
+        // ===== VISITOR COUNTER =====
+        function updateVisitorCounter() {
+            // In a real app, you'd update this in Firestore
+            const counter = document.getElementById('visitorCounter');
+            let count = Math.floor(Math.random() * 5000) + 1000; // Simulated for demo
+            counter.textContent = count.toLocaleString();
+        }
+        
+        // Initialize
+        updateVisitorCounter();
+    </script>
+</body>
+  </html>
